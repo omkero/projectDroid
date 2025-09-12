@@ -1,2 +1,2 @@
-package com.example.projectdroid
-
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable

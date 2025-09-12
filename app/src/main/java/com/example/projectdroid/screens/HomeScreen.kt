@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -75,7 +76,7 @@ fun HomeScreen(context: Context, navController: NavHostController) {
 
                 },
                 colors = TopAppBarColors(
-                    containerColor = PrimaryBackground,
+                    containerColor = SecondaryBackground,
                     titleContentColor = Color.White,
                     scrolledContainerColor = Color.Blue,
                     navigationIconContentColor = Color.Blue,
@@ -91,9 +92,10 @@ fun HomeScreen(context: Context, navController: NavHostController) {
                 positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
                 tooltip = {
                     PlainTooltip (
-                        modifier = Modifier.padding(vertical = 15.dp)
+                        modifier = Modifier.padding(vertical = 15.dp),
+                        containerColor = Color.Black
                     ) {
-                        Text("Add Miner")
+                        Text("Add Miner", color = Color.White)
                     }
                 },
                 state = rememberTooltipState(),
@@ -136,7 +138,7 @@ fun HomeScreen(context: Context, navController: NavHostController) {
 @Composable
 fun BottomBar(currentTab: MutableIntState) {
     val Tabs = listOf<TabItem>(
-        TabItem(DashboardIcon, "Dashboard"),
+        TabItem(Icons.Filled.Home, "Dashboard"),
         TabItem(Icons.Default.Settings, "Settings"),
     )
 
@@ -152,7 +154,7 @@ fun BottomBar(currentTab: MutableIntState) {
                     currentTab.intValue = index
                 },
                 icon = {
-                    
+
                     Icon(item.Icon, contentDescription = item.Title, modifier = Modifier.size(19.dp))
                        },
                 colors = NavigationBarItemDefaults.colors(

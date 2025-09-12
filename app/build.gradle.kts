@@ -40,6 +40,8 @@ android {
 }
 
 dependencies {
+    implementation("com.squareup.moshi:moshi:1.15.0")
+    implementation("org.json:json:20231013")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

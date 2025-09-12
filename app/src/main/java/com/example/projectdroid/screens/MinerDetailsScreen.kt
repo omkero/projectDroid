@@ -33,6 +33,7 @@ import com.example.projectdroid.components.SetStatusBarContentColor
 import com.example.projectdroid.ui.theme.AppHorizontalPadding
 import com.example.projectdroid.ui.theme.PrimaryBackground
 import com.example.projectdroid.ui.theme.PrimaryFontSize
+import com.example.projectdroid.ui.theme.SecondaryBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +59,7 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController) {
 
                 },
                 colors = TopAppBarColors(
-                    containerColor = PrimaryBackground,
+                    containerColor = SecondaryBackground,
                     titleContentColor = Color.White,
                     scrolledContainerColor = Color.White,
                     navigationIconContentColor = Color.White,
@@ -72,13 +73,18 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController) {
         Box (
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .background(PrimaryBackground)
         ) {
             Column (
-                Modifier.padding(AppHorizontalPadding)
+                Modifier
+                    .padding(innerPadding)
+                    .background(PrimaryBackground)
             ) {
-                Text("Miner Details", color = Color.White)
+                Column (
+                    modifier = Modifier.padding(AppHorizontalPadding)
+                ) {
+                    Text("Miner Details", color = Color.White, fontSize = PrimaryFontSize)
+                }
             }
         }
     }

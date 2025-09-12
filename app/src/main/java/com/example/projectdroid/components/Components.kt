@@ -131,9 +131,11 @@ fun BackButtonWithTooltip(navController: NavController, onClick: () -> Unit) {
         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
         tooltip = {
             PlainTooltip (
-                modifier = Modifier.padding(vertical = 15.dp, horizontal = AppHorizontalPadding)
+                containerColor = Color.Black,
+
+                        modifier = Modifier.padding(vertical = 15.dp, horizontal = AppHorizontalPadding)
             ) {
-                Text("Go Back")
+                Text("Go Back", color = Color.White)
             }
         },
         state = rememberTooltipState(),
@@ -161,6 +163,7 @@ fun SetStatusBarContentColor(
         // Set icon color
         val insetsController = WindowInsetsControllerCompat(window, view)
         insetsController.isAppearanceLightStatusBars = useDarkIcons
+        insetsController.isAppearanceLightNavigationBars = useDarkIcons
 
         onDispose {}
     }
