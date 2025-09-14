@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
@@ -20,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -45,9 +43,8 @@ import androidx.navigation.NavHostController
 import com.example.projectdroid.components.SetStatusBarContentColor
 import com.example.projectdroid.tabs.DashBoardTab
 import com.example.projectdroid.tabs.SettingsTab
-import com.example.projectdroid.ui.theme.AppHorizontalPadding
 import com.example.projectdroid.ui.theme.Cpu
-import com.example.projectdroid.ui.theme.DashboardIcon
+import com.example.projectdroid.ui.theme.LightGreeen
 import com.example.projectdroid.ui.theme.PrimaryBackground
 import com.example.projectdroid.ui.theme.SecondaryBackground
 
@@ -101,10 +98,10 @@ fun HomeScreen(context: Context, navController: NavHostController) {
                 state = rememberTooltipState(),
             ) {
                 FloatingActionButton(
-                    containerColor = SecondaryBackground,
-                    contentColor = Color.White,
+                    containerColor = LightGreeen,
+                    contentColor = Color.Black,
                     onClick = {
-
+                        navController.navigate("AddMinerScreen")
                     },
                 ) {
                     Icon(Icons.Filled.Add, "Floating action button.")
@@ -126,7 +123,7 @@ fun HomeScreen(context: Context, navController: NavHostController) {
                 animationSpec = tween(300)
             ) { tab ->
                 when (tab) {
-                    0 -> DashBoardTab(innerPadding, navController)
+                    0 -> DashBoardTab(innerPadding, navController, context)
                     1 -> SettingsTab(innerPadding, navController)
                 }
             }

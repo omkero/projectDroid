@@ -1,2 +1,6 @@
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+data class MinerType (
+    val ipv4: String,
+    val port: String,
+    val name: String,
+    val type: String,
+)

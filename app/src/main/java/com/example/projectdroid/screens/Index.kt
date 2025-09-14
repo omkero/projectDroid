@@ -74,7 +74,44 @@ fun IndexScreen() {
             }
 
             composable(
-                route = "MinerDetailsScreen",
+                route = "MinerDetailsScreen/{minerIndex}",
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Start,
+                        animationSpec = tween(durationMillis = transitionInDuration, easing = LinearOutSlowInEasing)
+                    ) + fadeIn(
+                        animationSpec = tween(durationMillis = transitionInDuration, easing = LinearEasing)
+                    )
+                },
+
+                exitTransition = {
+                    fadeOut(
+                        animationSpec = tween(durationMillis = transitionOutDuration, easing = LinearEasing)
+                    )
+                },
+
+                popEnterTransition = {
+                    fadeIn(
+                        animationSpec = tween(durationMillis = popTransitionDuration, easing = LinearOutSlowInEasing)
+                    )
+                },
+
+                popExitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.End,
+                        animationSpec = tween(durationMillis = popTransitionDuration, easing = LinearOutSlowInEasing)
+                    ) + fadeOut(
+                        animationSpec = tween(durationMillis = popTransitionDuration, easing = LinearEasing)
+                    )
+                }
+
+            ) { backStackEntry ->
+                val minerIndex =  backStackEntry.arguments?.getString("minerIndex")?.toIntOrNull() ?: 0
+                MinerDetailsScreen(LocalContext.current, navController, minerIndex)
+            }
+
+            composable(
+                route = "AddMinerScreen",
                 enterTransition = {
                     slideIntoContainer(
                         AnimatedContentTransitionScope.SlideDirection.Start,
@@ -106,7 +143,7 @@ fun IndexScreen() {
                 }
 
             ) {
-                MinerDetailsScreen(LocalContext.current, navController)
+                AddMinerScreen(LocalContext.current, navController)
             }
         }
     }
