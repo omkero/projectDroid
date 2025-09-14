@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.projectdroid"
+    namespace = "com.omkero.asicscanner"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.projectdroid"
+        applicationId = "com.omkero.asicscanner"
         minSdk = 30
         targetSdk = 36
         versionCode = 1
@@ -40,9 +40,11 @@ android {
 }
 
 dependencies {
-    implementation("com.squareup.moshi:moshi:1.15.0")
     implementation("org.json:json:20231013")
 
+    val nav_version = "2.9.4"
+
+    implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -51,8 +53,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.compose.testing)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

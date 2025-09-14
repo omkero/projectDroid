@@ -1,0 +1,45 @@
+{
+
+  "STATUS":[
+    {
+      "STATUS":"S",
+      "When":1757792583,
+      "Code":11,
+      "Msg":"Summary",
+      "Description":"cgminer 1.0.0"
+    }
+  ],
+  "SUMMARY":[
+    {
+      "Elapsed":11172,
+      "GHS 5s":102056.67,
+      "GHS av":101250.21,
+      "GHS 30m":101296.68,
+      "Found Blocks":0,
+      "Getwork":395,
+      "Accepted":2843,
+      "Rejected":8,
+      "Hardware Errors":1,
+      "Utility":15.26,
+      "Discarded":6016,
+      "Stale":0,
+      "Get Failures":0,
+      "Local Work":6496,
+      "Remote Failures":0,
+      "Network Blocks":20,
+      "Total MH":1.11273985191e12,
+      "Work Utility":1409754.32,
+      "Difficulty Accepted":262250496.0,
+      "Difficulty Rejected":245760.0,
+      "Difficulty Stale":0.0,
+      "Best Share":41511494393,
+      "Device Hardware%":0.0,
+      "Device Rejected%":0.0,
+      "Pool Rejected%":0.0,
+      "Pool Stale%":0.0,
+      "Last getwork":1757792582
+    }
+  ],
+  "id":1
+
+}

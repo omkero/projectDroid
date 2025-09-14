@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "projectDroid"
+rootProject.name = "AsicScanner"
 include(":app")
