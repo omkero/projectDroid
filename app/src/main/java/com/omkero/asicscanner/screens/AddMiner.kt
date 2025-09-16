@@ -60,6 +60,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.omkero.asicscanner.components.BackButtonWithTooltip
 import com.omkero.asicscanner.components.SetStatusBarContentColor
@@ -78,16 +79,17 @@ import com.omkero.asicscanner.ui.theme.SecondaryBackground
 import com.omkero.asicscanner.ui.theme.SecondaryFontSize
 import com.omkero.asicscanner.ui.theme.ServerIcon
 import com.omkero.asicscanner.utils.ValidIpv4
+import com.omkero.asicscanner.viewmodel.MinerViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMinerScreen(context: Context, navController: NavHostController) {
+fun AddMinerScreen(context: Context, navController: NavHostController, minerViewModel: MinerViewModel = viewModel()) {
     SetStatusBarContentColor(false)
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    var parentWidth by remember { mutableStateOf(0.dp) }
     var ipv4 by remember { mutableStateOf("") }
     var portNum by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
@@ -172,7 +174,7 @@ fun AddMinerScreen(context: Context, navController: NavHostController) {
                                     tint = Color.LightGray
                                 )
                             },
-
+                            maxLines = 1,
                             isError = isIpv4Error,
                             supportingText = {
                                 if (isIpv4Error) {
@@ -257,6 +259,7 @@ fun AddMinerScreen(context: Context, navController: NavHostController) {
                                             },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(AppRoundedDp),
+                            maxLines = 1,
 
                             placeholder = { Text("e.g Antminer S19") },
                             leadingIcon = {
@@ -389,14 +392,15 @@ fun AddMinerScreen(context: Context, navController: NavHostController) {
                                 return@Button
                             }
 
-                            // inesert
+                            // add miner
                             val newMiner = MinerType(
                                 ipv4,
                                 portNum,
                                 name,
-                                selectedType
+                                selectedType,
+                                ipv4 + portNum
                             )
-                            insertMiner(context, newMiner)
+                            minerViewModel.addMiner(context, newMiner)
 
                             scope.launch {
                                 snackbarHostState.showSnackbar(

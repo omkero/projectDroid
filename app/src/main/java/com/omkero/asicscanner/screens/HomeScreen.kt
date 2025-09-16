@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.omkero.asicscanner.components.SetStatusBarContentColor
 import com.omkero.asicscanner.tabs.DashBoardTab
@@ -47,6 +48,7 @@ import com.omkero.asicscanner.ui.theme.Cpu
 import com.omkero.asicscanner.ui.theme.LightGreeen
 import com.omkero.asicscanner.ui.theme.PrimaryBackground
 import com.omkero.asicscanner.ui.theme.SecondaryBackground
+import com.omkero.asicscanner.viewmodel.MinerViewModel
 
 
 data class TabItem (
@@ -56,7 +58,7 @@ data class TabItem (
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(context: Context, navController: NavHostController) {
+fun HomeScreen(context: Context, navController: NavHostController, minerViewModel: MinerViewModel = viewModel()) {
     SetStatusBarContentColor(false)
     var currentTab = remember { mutableIntStateOf(0) }
     Scaffold (
@@ -64,12 +66,27 @@ fun HomeScreen(context: Context, navController: NavHostController) {
         topBar = {
             TopAppBar(
                 title = {
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(9.dp)
-                    ) {
-                        Icon(Cpu, "", modifier = Modifier.size(25.dp))
-                        Text("Miner Scanner")
+
+                    Crossfade(
+                        targetState = currentTab.intValue,
+                        animationSpec = tween(300)
+                    ) { tab ->
+                        when (tab) {
+                            0 -> Row (
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(9.dp)
+                            ) {
+                                Icon(Cpu, "", modifier = Modifier.size(25.dp))
+                                Text("Asic Control")
+                            }
+                            1 -> Row (
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(9.dp)
+                            ) {
+                                Icon(Cpu, "", modifier = Modifier.size(25.dp))
+                                Text("Settings")
+                            }
+                        }
                     }
 
                 },
@@ -124,7 +141,7 @@ fun HomeScreen(context: Context, navController: NavHostController) {
                 animationSpec = tween(300)
             ) { tab ->
                 when (tab) {
-                    0 -> DashBoardTab(innerPadding, navController, context)
+                    0 -> DashBoardTab(innerPadding, navController, context, minerViewModel)
                     1 -> SettingsTab(innerPadding, navController)
                 }
             }

@@ -43,7 +43,9 @@ dependencies {
     implementation("org.json:json:20231013")
 
     val nav_version = "2.9.4"
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.36.0")
 
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0") // Use the latest stable version
     implementation("androidx.navigation:navigation-compose:$nav_version")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -42,6 +42,8 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
@@ -50,11 +52,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.omkero.asicscanner.repo.fetchWhatsminerDataLoop
 import com.omkero.asicscanner.ui.theme.AppHorizontalPadding
 import com.omkero.asicscanner.ui.theme.AppRoundedDp
-import com.omkero.asicscanner.ui.theme.AppRoundedDp
-import com.omkero.asicscanner.ui.theme.PrimaryFontSize
-import com.omkero.asicscanner.ui.theme.SecondaryBackground
-import com.omkero.asicscanner.ui.theme.SecondaryFontSize
-import com.omkero.asicscanner.utils.GigaHashToTeraHash
 import com.omkero.asicscanner.utils.GigaHashToTeraHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,12 +65,36 @@ import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.Socket
 
+@SuppressLint("DefaultLocale")
+@Composable
+fun DisplayTotalHashRateCard(
+    topText: String,
+    modifier: Modifier = Modifier,
+    minersMap: SnapshotStateMap<String, Double>
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(AppRoundedDp))
+            .background(SecondaryBackground)
+            .padding(vertical = 10.dp, horizontal = 15.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(topText, color = Color.LightGray, fontSize = SecondaryFontSize)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text("${String.format("%.2f", minersMap.values.sum())} TH/s", color = Color.White, fontSize = PrimaryFontSize)
+        }
+    }
+}
+
 @Composable
 fun DisplayCard(
     topText: String,
     bottomText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(AppRoundedDp))
@@ -98,9 +119,11 @@ fun DisplayMinerStatus(
     ipv4: String,
     port: String,
     type: String,
+    uniqueKey: String,
     onClick: () -> Any,
-    onLongPress: () -> Any,
-    onTotalHashRate: (Double) -> Unit
+    onLongPress: (String) -> Any,
+    onTotalHashRate: (Double, String) -> Unit,
+    minersMap: SnapshotStateMap<String, Double>
 ) {
     val haptics = LocalHapticFeedback.current
     var isMinerError by remember { mutableStateOf(false) }
@@ -133,17 +156,26 @@ fun DisplayMinerStatus(
                             val res = (tmp1.toInt() + tmp2.toInt() + tmp3.toInt()) / 3
 
                             if (ghs.isEmpty()) {
+                                isMinerError = true
+                            } else {
                                 isMinerError = false
+
                             }
 
                             withContext(Dispatchers.Main) {
                                 hash = GigaHashToTeraHash(ghs.toFloatOrNull() ?: 0.0f)
                                 temp = "$res°C"
-                                onTotalHashRate(GigaHashToTeraHash(ghs.toFloatOrNull() ?: 0.0f))
+
+                                if (ghs.isNotEmpty()) {
+                                    minersMap[uniqueKey] = hash
+                                }
+                                onTotalHashRate(GigaHashToTeraHash(ghs.toFloatOrNull() ?: 0.0f), ipv4)
                             }
                         }
                     } catch (e: Exception) {
                         isMinerError = true
+                        minersMap[ipv4] = 0.0
+
                         Log.d("DisplayMinerStatus", "Error: ${e.message}")
                         e.printStackTrace()
 
@@ -156,7 +188,12 @@ fun DisplayMinerStatus(
                 scope,
                 ipv4,
                 port,
-                onHashRate = { hash = it },
+                onHashRate = {
+                    hash = it
+                    if (hash.toString().isNotEmpty()) {
+                        isMinerError = false
+                    }
+                },
                 onTemp = { temp = it },
                 onUptime = { },
                 onFan1 = { },
@@ -166,15 +203,21 @@ fun DisplayMinerStatus(
                 onPool1 = { },
                 onPool2 = { },
                 onPool3 = { },
-                onError = { isMinerError = true },
+                onError = {
+                    isMinerError = true
+                    minersMap[ipv4] = 0.0
+                },
                 onIsPool1Alive = { },
                 onIsPool2Alive = {  },
                 onIsPool3Alive = {  },
                 onPoolUser1 = { },
                 onPoolUser2 = { },
                 onPoolUser3 = { },
-                onDeviceName = {  }
+                onDeviceName = {  },
+                onHashRateSet = { hashRate, ipv4 ->
+                    minersMap[uniqueKey] = hashRate
 
+                }
             )
         }
     }
@@ -192,7 +235,7 @@ fun DisplayMinerStatus(
                 onLongClick = {
                     // Handle long-press event
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLongPress()
+                    onLongPress(uniqueKey)
                     // Perform your desired action on long press
                 },
             )
@@ -220,7 +263,7 @@ fun DisplayMinerStatus(
                     )
                 }
                 Column {
-                    Text(Title, color = Color.LightGray, fontSize = PrimaryFontSize)
+                    Text( if (Title.length> 13) Title.substring(0, 13) + " .." else Title, color = Color.LightGray, fontSize = PrimaryFontSize)
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(if (isMinerError || hash == 0.0 || temp.isEmpty()) "Offline" else "Online",
                         color = if (isMinerError || hash == 0.0 || temp.isEmpty()) Color.Red else Color.Green,
@@ -288,7 +331,7 @@ fun DisplayPool(title: String, url: String, isPoolAlive: String, poolUser: Strin
                     maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(if (isPoolAlive == "Alive") "Active" else "Detective",
+                Text(if (isPoolAlive == "Alive") "Active" else "Disabled",
                     color = if (isPoolAlive == "Alive") Color.Green else Color.Red,
                     fontSize = 12.sp,
                     modifier = Modifier

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -27,9 +28,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,69 +46,47 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.omkero.asicscanner.components.DisplayCard
 import com.omkero.asicscanner.components.DisplayMinerStatus
+import com.omkero.asicscanner.components.DisplayTotalHashRateCard
 import com.omkero.asicscanner.repo.loadMiners
 import com.omkero.asicscanner.repo.removeMinerAt
 import com.omkero.asicscanner.ui.theme.AppHorizontalPadding
-import com.omkero.asicscanner.ui.theme.DarkRed
 import com.omkero.asicscanner.ui.theme.PrimaryBackground
 import com.omkero.asicscanner.ui.theme.PrimaryFontSize
 import com.omkero.asicscanner.ui.theme.SecondaryBackground
+import com.omkero.asicscanner.viewmodel.MinerViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("CoroutineCreationDuringComposition", "DefaultLocale")
 @Composable
-fun DashBoardTab(innerPadding: PaddingValues, navController: NavHostController, context: Context) {
-    var response: String? by remember { mutableStateOf("") }
-    var isConnected by remember { mutableStateOf(false) }
-    var miners by remember { mutableStateOf<List<MinerType>>(loadMiners(context)) }
+fun DashBoardTab(
+    innerPadding: PaddingValues,
+    navController: NavHostController,
+    context: Context,
+    minerViewModel: MinerViewModel
+) {
+
+    var miners = minerViewModel.miners.collectAsState()
     var isItemRemoveDialog by remember { mutableStateOf(false) }
     var targetMiner by remember { mutableIntStateOf(0) }
-    var isRefreshing by remember { mutableStateOf(false) }
-    var totalHashRate by remember { mutableDoubleStateOf(0.0) }
+    val minersMap = remember { mutableStateMapOf<String, Double>() }
+    var tempUniqueKey by remember { mutableStateOf("") }
+
 
     // realtime
     val scope = CoroutineScope(Dispatchers.IO)
-    /*
-    *     scope.launch {
-        while (isActive) {
-            try {
-                Socket("192.168.1.172", 4028).use { socket ->
-                    val writer = PrintWriter(socket.getOutputStream(), true)
-                    val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
-
-                    writer.println("{\"command\":\"stats\"}")
-                    val rawResponse = reader.readLine() ?: return@use
-
-                    val json = JSONObject(rawResponse)
-                    val stats1 = json.getJSONArray("STATS").getJSONObject(1)
-                    val ghs = stats1.getString("GHS 5s")
-
-                    withContext(Dispatchers.Main) {
-                        response = ghs
-                    }
-                }
-            } catch (e: Exception) {
-                response     = "Ops Something Went Wrong !!"
-                e.printStackTrace()
-            }
-
-            delay(5000)
-        }
-    }
-    *
-    * */
 
     LaunchedEffect(UInt) {
-        miners = loadMiners(context)
+        minerViewModel.getMiners(context)
     }
 
     Column (
         modifier = Modifier
             .padding(innerPadding)
             .background(PrimaryBackground)
-            .fillMaxSize(),
+            .fillMaxSize()
+        ,
     ) {
         if (isItemRemoveDialog) {
             BasicAlertDialog(
@@ -159,12 +141,15 @@ fun DashBoardTab(innerPadding: PaddingValues, navController: NavHostController, 
                                 onClick = {
                                     // your action
                                     removeMinerAt(context, targetMiner)
-                                    miners = loadMiners(context)
                                     isItemRemoveDialog = false
+                                    minersMap.remove(tempUniqueKey)
+                                    tempUniqueKey = ""
+                                    minerViewModel.getMiners(context)
+
                                 },
                                 contentPadding = PaddingValues(7.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = DarkRed, // Purple as an example
+                                    containerColor = Color.Red, // Purple as an example
                                     contentColor = Color.White,
 
                                     ),
@@ -179,7 +164,7 @@ fun DashBoardTab(innerPadding: PaddingValues, navController: NavHostController, 
                     }
                 })
         }
-        if (miners.isEmpty()) {
+        if (miners.value.isEmpty()) {
             Column (
                 modifier = Modifier.padding(AppHorizontalPadding)
             ) {
@@ -191,7 +176,11 @@ fun DashBoardTab(innerPadding: PaddingValues, navController: NavHostController, 
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     DisplayCard("Total Hashrate", "- -", Modifier.weight(1f))
-                    DisplayCard("Total Miners", "${miners.size}", Modifier.weight(1f))
+                    DisplayCard(
+                        "Total Miners",
+                        "${miners.value.size}",
+                        Modifier.weight(1f),
+                    )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Text("Miner Status", color = Color.White, fontSize = PrimaryFontSize)
@@ -201,6 +190,8 @@ fun DashBoardTab(innerPadding: PaddingValues, navController: NavHostController, 
         } else {
             Column (
                 modifier = Modifier.padding(AppHorizontalPadding)
+                ,
+
             ) {
                 Text("Overview", color = Color.White, fontSize = PrimaryFontSize)
                 Spacer(modifier = Modifier.height(12.dp))
@@ -209,73 +200,50 @@ fun DashBoardTab(innerPadding: PaddingValues, navController: NavHostController, 
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    DisplayCard("Total Hashrate", "${String.format("%.2f", totalHashRate)}  TH/s", Modifier.weight(1f))
-                    DisplayCard("Total Miners", "${miners.size}" , Modifier.weight(1f))
+                    DisplayTotalHashRateCard(
+                        "Total Hashrate",
+                        Modifier.weight(1f),
+                        minersMap
+                    )
+                    DisplayCard(
+                        "Total Miners",
+                        "${miners.value.size}",
+                        Modifier.weight(1f),
+                    )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Text("Miner Status", color = Color.White, fontSize = PrimaryFontSize)
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyColumn (
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth()
+                    ,
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    itemsIndexed(miners) { index,item ->
+                    itemsIndexed(miners.value) { index,item ->
 
                         DisplayMinerStatus(
                             item.name,
                             item.ipv4,
                             item.port,
                             item.type,
+                            item.uniqueKey,
                             onClick = {
                                 navController.navigate("MinerDetailsScreen/${index}")
                             },
-                            onLongPress = {
+                            onLongPress = { unique ->
                                 targetMiner = index
                                 isItemRemoveDialog = true
+                                tempUniqueKey = unique
                             },
-                            onTotalHashRate = {
-                                totalHashRate = it
-                            }
+                            onTotalHashRate = { hashRate, ipv4 ->
+
+                            },
+                            minersMap
                         )
                     }
                 }
-
-                // Display parsed miner data
-                response?.let { Text(it, color = Color.White) }
             }
         }
     }
 }
 
-/*
-*             Button(onClick = {
-                scope.launch(Dispatchers.IO) {
-                    try {
-                        val socket = Socket("192.168.1.172", 4028)
-                        val writer = PrintWriter(socket.getOutputStream(), true)
-                        val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
-
-                        // Send command
-                        writer.println("{\"command\":\"stats\"}")
-
-                        // Read response
-                        val rawResponse = reader.readLine()
-                        // Parse with org.json (lenient & simple)
-                        val json = JSONObject(rawResponse)
-
-                        val status = json.getJSONArray("STATUS").getJSONObject(0)
-                        val stats0 = json.getJSONArray("STATS").getJSONObject(0)
-                        val stats1 = json.getJSONArray("STATS").getJSONObject(1)
-
-                        response = stats1.getString("GHS 5s")
-                        socket.close()
-                    } catch (e: Exception) {
-                        Log.d("err", "$e.message")
-                        response = "Connection error: ${e.message}"
-                        isConnected = false
-                    }
-                }
-            }) {
-                Text("Connect to Miner")
-            }
-*  */

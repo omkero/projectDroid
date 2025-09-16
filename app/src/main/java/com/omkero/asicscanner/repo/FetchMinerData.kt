@@ -37,7 +37,8 @@ fun fetchWhatsminerDataLoop(
     onPoolUser1: (String) -> Unit,
     onPoolUser2: (String) -> Unit,
     onPoolUser3: (String) -> Unit,
-    onDeviceName: (String) -> Unit
+    onDeviceName: (String) -> Unit,
+    onHashRateSet: (Double, String) -> Unit,
 
 ) {
     scope.launch {
@@ -103,6 +104,9 @@ fun fetchWhatsminerDataLoop(
                 val fanSpeedIn = summary.optString("Fan Speed In")
                 val fanSpeedOut = summary.optString("Fan Speed Out")
 
+                val fanIn = fanSpeedIn.toIntOrNull() ?: 0
+                val fanOut = fanSpeedOut.toIntOrNull() ?: 0
+
                 val estimatedFanSpeed = (
                         (fanSpeedIn.toIntOrNull() ?: 0) +
                                 (fanSpeedOut.toIntOrNull() ?: 0)
@@ -137,11 +141,12 @@ fun fetchWhatsminerDataLoop(
                     onIsPool1Alive(pool1.optString("Status", ""))
                     onIsPool2Alive(pool2.optString("Status", ""))
                     onIsPool3Alive(pool3.optString("Status", ""))
-                    onFan1(estimatedFanSpeed.toString())
-                    onFan2(estimatedFanSpeed.toString())
-                    onFan3(estimatedFanSpeed.toString())
-                    onFan4(estimatedFanSpeed.toString())
+                    onFan1(fanIn.toString())
+                    onFan2(fanOut.toString())
+                    onFan3("")
+                    onFan4("")
                     onDeviceName("")
+                    onHashRateSet(MigaHashToTeraHash(ghs.toFloatOrNull() ?: 0f), ipv4)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) { onError() }
@@ -173,7 +178,8 @@ fun fetchAntminerDataLoop(
     onPoolUser1: (String) -> Unit,
     onPoolUser2: (String) -> Unit,
     onPoolUser3: (String) -> Unit,
-    onDeviceName: (String) -> Unit
+    onDeviceName: (String) -> Unit,
+    onHashRateSet: (Double, String) -> Unit,
 
 ) {
     scope.launch {
@@ -251,6 +257,8 @@ fun fetchAntminerDataLoop(
                     onPoolUser3(poolUser3)
 
                     onDeviceName(device_name)
+                    onHashRateSet(GigaHashToTeraHash(ghs.toFloatOrNull() ?: 0f), ipv4)
+
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) { onError() }
@@ -263,7 +271,7 @@ fun fetchAntminerDataLoop(
 }
 
 // One-shot fetch (runs once, no loop)
-suspend fun fetchWhatsminerDataOnce(
+suspend fun fetchAntminerDataOnce(
     ipv4: String,
     port: String,
     onHashRate: (Double) -> Unit,
@@ -283,6 +291,7 @@ suspend fun fetchWhatsminerDataOnce(
     onPoolUser2: (String) -> Unit,
     onPoolUser3: (String) -> Unit,
     onDeviceName: (String) -> Unit,
+    onHashRateSet: (Double, String) -> Unit,
 
     onError: () -> Unit
 ) {
@@ -342,6 +351,7 @@ suspend fun fetchWhatsminerDataOnce(
             onPoolUser2(pools.optJSONObject(1)?.optString("User", "") ?: "")
             onPoolUser3(pools.optJSONObject(2)?.optString("User", "") ?: "")
             onDeviceName(stats_info.optString("Type", "") ?: "")
+            onHashRateSet(GigaHashToTeraHash(ghs.toFloatOrNull() ?: 0f), ipv4)
 
         }
     } catch (e: Exception) {
@@ -350,7 +360,7 @@ suspend fun fetchWhatsminerDataOnce(
     }
 }
 
-suspend fun fetchAntminerDataOnce(
+suspend fun fetchWhatsminerDataOnce(
     ipv4: String,
     port: String,
     onHashRate: (Double) -> Unit,
@@ -370,6 +380,7 @@ suspend fun fetchAntminerDataOnce(
     onPoolUser2: (String) -> Unit,
     onPoolUser3: (String) -> Unit,
     onDeviceName: (String) -> Unit,
+    onHashRateSet: (Double, String) -> Unit,
 
     onError: () -> Unit
 ) {
@@ -434,6 +445,10 @@ suspend fun fetchAntminerDataOnce(
         val fanSpeedIn = summary.optString("Fan Speed In")
         val fanSpeedOut = summary.optString("Fan Speed Out")
 
+
+        val fanIn = fanSpeedIn.toIntOrNull() ?: 0
+        val fanOut = fanSpeedOut.toIntOrNull() ?: 0
+
         val estimatedFanSpeed = (
                 (fanSpeedIn.toIntOrNull() ?: 0) +
                         (fanSpeedOut.toIntOrNull() ?: 0)
@@ -458,7 +473,7 @@ suspend fun fetchAntminerDataOnce(
         withContext(Dispatchers.Main) {
             onHashRate(MigaHashToTeraHash(ghs.toFloatOrNull() ?: 0f))
             onUptime(uptime.toDoubleOrNull() ?: 0.0)
-            onTemp(estimatedTemp.toString())
+            onTemp("${estimatedTemp.toInt()}°C")
             onPool1(pool1.optString("URL", ""))
             onPool2(pool2.optString("URL", ""))
             onPool3(pool3.optString("URL", ""))
@@ -468,11 +483,14 @@ suspend fun fetchAntminerDataOnce(
             onIsPool1Alive(pool1.optString("Status", ""))
             onIsPool2Alive(pool2.optString("Status", ""))
             onIsPool3Alive(pool3.optString("Status", ""))
-            onFan1(estimatedFanSpeed.toString())
-            onFan2(estimatedFanSpeed.toString())
-            onFan3(estimatedFanSpeed.toString())
-            onFan4(estimatedFanSpeed.toString())
+
+            onFan1(fanIn.toString())
+            onFan2(fanOut.toString())
+            onFan3("")
+            onFan4("")
             onDeviceName("")
+            onHashRateSet(MigaHashToTeraHash(ghs.toFloatOrNull() ?: 0f), ipv4)
+
         }
     } catch (e: Exception) {
         withContext(Dispatchers.Main) { onError() }

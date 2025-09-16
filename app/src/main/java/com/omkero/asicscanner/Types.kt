@@ -3,4 +3,5 @@ data class MinerType (
     val port: String,
     val name: String,
     val type: String,
+    val uniqueKey: String
 )

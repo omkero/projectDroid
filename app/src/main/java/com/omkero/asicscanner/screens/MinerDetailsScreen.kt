@@ -21,11 +21,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -118,7 +119,10 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController, miner
                 onPoolUser1 = {poolUser1 = it},
                 onPoolUser2 = {poolUser2 = it},
                 onPoolUser3 = {poolUser3 = it},
-                onDeviceName = { deviceName = it }
+                onDeviceName = { deviceName = it },
+                onHashRateSet = {hashRate, ipv4 ->
+
+                }
 
             )
         } else if (minerType == "Whatsminer") {
@@ -143,8 +147,10 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController, miner
                 onPoolUser1 = {poolUser1 = it},
                 onPoolUser2 = {poolUser2 = it},
                 onPoolUser3 = {poolUser3 = it},
-                onDeviceName = { deviceName = it }
+                onDeviceName = { deviceName = it },
+                onHashRateSet = {hashRate, ipv4 ->
 
+                }
             )
         }
     }
@@ -212,7 +218,10 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController, miner
                                     onPoolUser1 = { poolUser1 = it },
                                     onPoolUser2 = { poolUser2 = it },
                                     onPoolUser3 = { poolUser3 = it },
-                                    onDeviceName = { deviceName = it }
+                                    onDeviceName = { deviceName = it },
+                                    onHashRateSet = {hashRate, ipv4 ->
+
+                                    }
                                 )
                             } else if (minerType == "Whatsminer") {
                                 fetchWhatsminerDataOnce(
@@ -235,7 +244,10 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController, miner
                                     onPoolUser1 = { poolUser1 = it },
                                     onPoolUser2 = { poolUser2 = it },
                                     onPoolUser3 = { poolUser3 = it },
-                                    onDeviceName = { deviceName = it }
+                                    onDeviceName = { deviceName = it },
+                                    onHashRateSet = {hashRate, ipv4 ->
+
+                                    }
                                 )
                             }
                         } finally {
@@ -259,11 +271,27 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController, miner
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text(name, color = Color.White, fontSize = PrimaryFontSize)
-                                Text(if (isMinerError || hashRate == 0.0) "- -" else deviceName, color = Color.LightGray, fontSize = SecondaryFontSize)
+                                Text(if (name.length > 10) "${name.substring(0, 10).toUpperCase()} ..  Monitoring" else "${name.toUpperCase()}  Monitoring", color = Color.White, fontSize = PrimaryFontSize)
+                                if (deviceName.isNotEmpty()) {
+                                    Text(if (isMinerError || hashRate == 0.0) "- -" else deviceName, color = Color.LightGray, fontSize = SecondaryFontSize)
+                                }
                             }
                             Text(minerType, color = Color.LightGray, fontSize = SecondaryFontSize)
                         }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row  (
+                            modifier = Modifier.fillMaxWidth(),
+
+                            ) {
+                            DisplayCard(
+                                "Host Name | Port",
+                                if (isMinerError || hashRate == 0.0) "- - " else if (miners[minerIndex].ipv4.length > 20 ) miners[minerIndex].ipv4.substring(0, 20)  + ":" + miners[minerIndex].port else miners[minerIndex].ipv4 + ":" + miners[minerIndex].port ,
+                                Modifier.weight(1f),
+                            )
+                        }
+
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -273,12 +301,12 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController, miner
                             DisplayCard(
                                 "Current Hashrate",
                                 if (isMinerError || hashRate == 0.0) "- - " else "${String.format("%.2f", hashRate)}  TH/s",
-                                Modifier.weight(1f)
+                                Modifier.weight(1f),
                             )
                             DisplayCard(
                                 "Temperature",
                                 if (isMinerError || temp.isEmpty()) "- -" else temp,
-                                Modifier.weight(1f)
+                                Modifier.weight(1f),
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
@@ -290,12 +318,12 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController, miner
                             DisplayCard(
                                 "Device Uptime",
                                 if (isMinerError || hashRate == 0.0 || temp.isEmpty()) "- - " else UptimeToDate(uptimeUnix),
-                                Modifier.weight(1f)
+                                Modifier.weight(1f),
                             )
                             DisplayCard(
                                 "Status",
                                 if (isMinerError || hashRate == 0.0 || temp.isEmpty()) "Offline" else "Online",
-                                Modifier.weight(1f)
+                                Modifier.weight(1f),
                             )
                         }
                         Spacer(modifier = Modifier.height(24.dp))
@@ -308,43 +336,63 @@ fun MinerDetailsScreen(context: Context, navController: NavHostController, miner
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             DisplayCard(
-                                "Fan 1",
+                                if (miners[minerIndex].type == "Antminer") "Fan 1" else "Fan In",
                                 if (isMinerError || fan1Speed.isEmpty()) "- - " else fan1Speed,
-                                Modifier.weight(1f)
-                            )
-                            DisplayCard(
-                                "Fan 2",
-                                if (isMinerError || fan2Speed.isEmpty()) "- - " else fan2Speed,
-                                Modifier.weight(1f)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            DisplayCard(
-                                "Fan 3",
-                                if (isMinerError || fan3Speed.isEmpty()) "- - " else fan3Speed,
-                                Modifier.weight(1f)
-                            )
-                            DisplayCard(
-                                "Fan 4",
-                                if (isMinerError || fan4Speed.isEmpty()) "- - " else fan4Speed,
-                                Modifier.weight(1f)
-                            )
-                        }
+                                Modifier.weight(1f),
 
+                            )
+                            DisplayCard(
+                                if (miners[minerIndex].type == "Antminer") "Fan 1" else "Fan Out",
+                                if (isMinerError || fan2Speed.isEmpty()) "- - " else fan2Speed,
+                                Modifier.weight(1f),
+
+                            )
+                        }
+                        if (miners[minerIndex].type == "Antminer") {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                DisplayCard(
+                                    "Fan 3",
+                                    if (isMinerError || fan3Speed.isEmpty()) "- - " else fan3Speed,
+                                    Modifier.weight(1f),
+
+                                    )
+                                DisplayCard(
+                                    "Fan 4",
+                                    if (isMinerError || fan4Speed.isEmpty()) "- - " else fan4Speed,
+                                    Modifier.weight(1f),
+
+                                    )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(24.dp))
                         Text("Pools", color = Color.White, fontSize = PrimaryFontSize)
                         Spacer(modifier = Modifier.height(12.dp))
-                        DisplayPool("Pool 1", poolUrl1, isPool1Alive, poolUser1)
+                        DisplayPool("Pool 1",
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else poolUrl1,
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else isPool1Alive,
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else poolUser1
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
-                        DisplayPool("Pool 2", poolUrl2, isPool2Alive, poolUser2)
+                        DisplayPool(
+                            "Pool 2",
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else poolUrl2,
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else isPool2Alive,
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else poolUser2
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
-                        DisplayPool("Pool 3", poolUrl3, isPool3Alive, poolUser3)
+                        DisplayPool(
+                            "Pool 3",
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else poolUrl3,
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else isPool3Alive,
+                            if (isMinerError || fan1Speed.isEmpty()) "- - " else poolUser3
+                        )
                         Spacer(modifier = Modifier.height(24.dp))
+
                     }
                 }
             }

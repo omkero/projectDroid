@@ -26,9 +26,9 @@ fun IndexScreen() {
     val isDark = isSystemInDarkTheme()
 
 // At the top of your MainScreen or in a ViewModel (if you want to control it globally)
-    val transitionInDuration = 200 // For forward animations (navigate to screen)
-    val transitionOutDuration = 200 // For fadeOut or slideOut (same forward)
-    val popTransitionDuration = 300 // Slightly longer for smoother backward transition
+    val transitionInDuration = 300 // For forward animations (navigate to screen)
+    val transitionOutDuration = 300 // For fadeOut or slideOut (same forward)
+    val popTransitionDuration = 330 // Slightly longer for smoother backward transition
 
     // Once data is loaded, determine the start destination
     Box (

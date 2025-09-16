@@ -9,7 +9,7 @@ fun saveMiners(context: Context, miners: List<MinerType>) {
     prefs.edit {
 
         val serialized = miners.joinToString(";;") { miner ->
-            "${miner.ipv4}|${miner.port}|${miner.name}|${miner.type}"
+            "${miner.ipv4}|${miner.port}|${miner.name}|${miner.type}|${miner.uniqueKey}"
         }
 
         putString("miners_list", serialized)
@@ -22,15 +22,16 @@ fun loadMiners(context: Context): List<MinerType> {
 
     return serialized
         .split(";;")
-        .filter { it.isNotBlank() } // avoid empty strings
+        .filter { it.isNotBlank() }
         .mapNotNull { minerString ->
             val parts = minerString.split("|")
             when (parts.size) {
-                4 -> MinerType(parts[0], parts[1], parts[2], parts[3]) // full record
-                3 -> MinerType(parts[0], parts[1], parts[2], "")       // old record, no type
+                5 -> MinerType(parts[0], parts[1], parts[2], parts[3], parts[4]) // full record
+                3 -> MinerType(parts[0], parts[1], parts[2], "", "")             // old record
                 else -> null
             }
         }
+
 
 }
 
