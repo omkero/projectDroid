@@ -87,9 +87,14 @@ fun fetchWhatsminerDataLoop(
                 val edevs3 = edevsObj.getJSONArray("DEVS").getJSONObject(2)
 
                 val poolsObj =  JSONObject(poolsJson)
-                val pool1 = poolsObj.getJSONArray("POOLS").getJSONObject(0)
-                val pool2 = poolsObj.getJSONArray("POOLS").getJSONObject(1)
-                val pool3 = poolsObj.getJSONArray("POOLS").getJSONObject(2)
+                val poolsArr = poolsObj.getJSONArray("POOLS")
+
+                fun getPoolOrEmpty(index: Int): JSONObject? {
+                    return if (index < poolsArr.length()) poolsArr.getJSONObject(index) else null
+                }
+                val pool1 = getPoolOrEmpty(0)
+                val pool2 = getPoolOrEmpty(1)
+                val pool3 = getPoolOrEmpty(2)
 
                 val summaryObj = JSONObject(summaryJson)
                 val summary = summaryObj.getJSONObject("Msg") // sometimes 0, check logs
@@ -117,8 +122,6 @@ fun fetchWhatsminerDataLoop(
                 val temp2 = edevs2.optString("Temperature", "")
                 val temp3 = edevs3.optString("Temperature", "")
 
-
-
                 val estimatedTemp = ((
                         (temp1.toFloatOrNull() ?: 0f) +
                                 (temp2.toFloatOrNull() ?: 0f) +
@@ -126,21 +129,20 @@ fun fetchWhatsminerDataLoop(
                         ) / 3f).toInt()
 
 
-
                 // ----------- Update UI -----------
                 withContext(Dispatchers.Main) {
                     onHashRate(MigaHashToTeraHash(ghs.toFloatOrNull() ?: 0f))
                     onUptime(uptime.toDoubleOrNull() ?: 0.0)
                     onTemp("$estimatedTemp°C")
-                    onPool1(pool1.optString("URL", ""))
-                    onPool2(pool2.optString("URL", ""))
-                    onPool3(pool3.optString("URL", ""))
-                    onPoolUser1(pool1.optString("User", ""))
-                    onPoolUser2(pool1.optString("User", ""))
-                    onPoolUser3(pool1.optString("User", ""))
-                    onIsPool1Alive(pool1.optString("Status", ""))
-                    onIsPool2Alive(pool2.optString("Status", ""))
-                    onIsPool3Alive(pool3.optString("Status", ""))
+                    onPool1(pool1?.optString("URL", "") ?: "")
+                    onPool2(pool2?.optString("URL", "") ?: "")
+                    onPool3(pool3?.optString("URL", "") ?: "")
+                    onPoolUser1(pool1?.optString("User", "") ?: "")
+                    onPoolUser2(pool1?.optString("User", "") ?: "")
+                    onPoolUser3(pool1?.optString("User", "") ?: "")
+                    onIsPool1Alive(pool1?.optString("Status", "") ?: "")
+                    onIsPool2Alive(pool2?.optString("Status", "") ?: "")
+                    onIsPool3Alive(pool3?.optString("Status", "") ?: "")
                     onFan1(fanIn.toString())
                     onFan2(fanOut.toString())
                     onFan3("")
@@ -428,15 +430,20 @@ suspend fun fetchWhatsminerDataOnce(
         val edevs3 = edevsObj.getJSONArray("DEVS").getJSONObject(2)
 
         val poolsObj =  JSONObject(poolsJson)
-        val pool1 = poolsObj.getJSONArray("POOLS").getJSONObject(0)
-        val pool2 = poolsObj.getJSONArray("POOLS").getJSONObject(1)
-        val pool3 = poolsObj.getJSONArray("POOLS").getJSONObject(2)
+        val poolsArr = poolsObj.getJSONArray("POOLS")
+
+        fun getPoolOrEmpty(index: Int): JSONObject? {
+            return if (index < poolsArr.length()) poolsArr.getJSONObject(index) else null
+        }
+        val pool1 = getPoolOrEmpty(0)
+        val pool2 = getPoolOrEmpty(1)
+        val pool3 = getPoolOrEmpty(2)
 
         val summaryObj = JSONObject(summaryJson)
         val summary = summaryObj.getJSONObject("Msg") // sometimes 0, check logs
 
         // val devDetailsObj = JSONObject(devDetailsJson)
-       // val devDetails1 = devDetailsObj.getJSONArray("DEVDETAILS").getJSONObject(0)
+        // val devDetails1 = devDetailsObj.getJSONArray("DEVDETAILS").getJSONObject(0)
 
         val ghs = summary.optString("HS RT", "0")
 
@@ -444,7 +451,6 @@ suspend fun fetchWhatsminerDataOnce(
 
         val fanSpeedIn = summary.optString("Fan Speed In")
         val fanSpeedOut = summary.optString("Fan Speed Out")
-
 
         val fanIn = fanSpeedIn.toIntOrNull() ?: 0
         val fanOut = fanSpeedOut.toIntOrNull() ?: 0
@@ -459,38 +465,33 @@ suspend fun fetchWhatsminerDataOnce(
         val temp2 = edevs2.optString("Temperature", "")
         val temp3 = edevs3.optString("Temperature", "")
 
-
-
-        val estimatedTemp = (
+        val estimatedTemp = ((
                 (temp1.toFloatOrNull() ?: 0f) +
                         (temp2.toFloatOrNull() ?: 0f) +
                         (temp3.toFloatOrNull() ?: 0f)
-                ) / 3f
-
+                ) / 3f).toInt()
 
 
         // ----------- Update UI -----------
         withContext(Dispatchers.Main) {
             onHashRate(MigaHashToTeraHash(ghs.toFloatOrNull() ?: 0f))
             onUptime(uptime.toDoubleOrNull() ?: 0.0)
-            onTemp("${estimatedTemp.toInt()}°C")
-            onPool1(pool1.optString("URL", ""))
-            onPool2(pool2.optString("URL", ""))
-            onPool3(pool3.optString("URL", ""))
-            onPoolUser1(pool1.optString("User", ""))
-            onPoolUser2(pool1.optString("User", ""))
-            onPoolUser3(pool1.optString("User", ""))
-            onIsPool1Alive(pool1.optString("Status", ""))
-            onIsPool2Alive(pool2.optString("Status", ""))
-            onIsPool3Alive(pool3.optString("Status", ""))
-
+            onTemp("$estimatedTemp°C")
+            onPool1(pool1?.optString("URL", "") ?: "")
+            onPool2(pool2?.optString("URL", "") ?: "")
+            onPool3(pool3?.optString("URL", "") ?: "")
+            onPoolUser1(pool1?.optString("User", "") ?: "")
+            onPoolUser2(pool1?.optString("User", "") ?: "")
+            onPoolUser3(pool1?.optString("User", "") ?: "")
+            onIsPool1Alive(pool1?.optString("Status", "") ?: "")
+            onIsPool2Alive(pool2?.optString("Status", "") ?: "")
+            onIsPool3Alive(pool3?.optString("Status", "") ?: "")
             onFan1(fanIn.toString())
             onFan2(fanOut.toString())
             onFan3("")
             onFan4("")
             onDeviceName("")
             onHashRateSet(MigaHashToTeraHash(ghs.toFloatOrNull() ?: 0f), ipv4)
-
         }
     } catch (e: Exception) {
         withContext(Dispatchers.Main) { onError() }

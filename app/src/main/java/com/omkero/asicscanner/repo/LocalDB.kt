@@ -4,6 +4,7 @@ import MinerType
 import android.content.Context
 import androidx.core.content.edit
 
+
 fun saveMiners(context: Context, miners: List<MinerType>) {
     val prefs = context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
     prefs.edit {

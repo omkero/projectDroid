@@ -19,3 +19,20 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep JSON keys (important for reflection-based parsing)
+-keepclassmembers class * {
+    public <fields>;
+}
+
+# Keep JSONObject & JSONArray methods
+-keep class org.json.** { *; }
+
+# Don't strip string constants
+-keepclassmembers class * {
+    @org.json.* <fields>;
+}
+
+# If using Kotlin coroutines (you are), keep them
+-keepclassmembers class kotlinx.coroutines.** { *; }
+-dontwarn kotlinx.coroutines.**

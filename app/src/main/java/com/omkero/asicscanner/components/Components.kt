@@ -155,20 +155,12 @@ fun DisplayMinerStatus(
 
                             val res = (tmp1.toInt() + tmp2.toInt() + tmp3.toInt()) / 3
 
-                            if (ghs.isEmpty()) {
-                                isMinerError = true
-                            } else {
-                                isMinerError = false
-
-                            }
-
                             withContext(Dispatchers.Main) {
+                                isMinerError = ghs.isEmpty()
                                 hash = GigaHashToTeraHash(ghs.toFloatOrNull() ?: 0.0f)
                                 temp = "$res°C"
 
-                                if (ghs.isNotEmpty()) {
-                                    minersMap[uniqueKey] = hash
-                                }
+                                minersMap[uniqueKey] = hash
                                 onTotalHashRate(GigaHashToTeraHash(ghs.toFloatOrNull() ?: 0.0f), ipv4)
                             }
                         }

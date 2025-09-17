@@ -1,3 +1,8 @@
+
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 data class MinerType (
     val ipv4: String,
     val port: String,
@@ -5,3 +10,4 @@ data class MinerType (
     val type: String,
     val uniqueKey: String
 )
+
